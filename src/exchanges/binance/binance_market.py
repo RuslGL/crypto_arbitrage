@@ -6,7 +6,7 @@ from src.config import (
     BINANCE_BOOK_TICKER_ENDPOINT,
     BINANCE_TICKERS_ENDPOINT,
     BINANCE_ORDERBOOK_ENDPOINT,   # эндпоинт depth
-    MAX_BOOK_DEPTH_LEVELS,        # глубина стакана из конфига
+    ORDERBOOK_DEPTH,              # ← единая глубина стакана
 )
 
 
@@ -54,10 +54,10 @@ async def fetch_tickers_24h_raw() -> list:
 async def fetch_orderbook_raw(symbol: str, limit: int | None = None) -> dict:
     """
     Возвращает стакан Binance (bids / asks) для символа.
-    limit — глубина (число уровней), по умолчанию берём из конфига.
+    limit — глубина (число уровней), по умолчанию берём из общего конфига.
     """
     if limit is None:
-        limit = MAX_BOOK_DEPTH_LEVELS
+        limit = ORDERBOOK_DEPTH
 
     url = f"{BINANCE_BASE_REST_URL}{BINANCE_ORDERBOOK_ENDPOINT}"
 
@@ -79,7 +79,6 @@ async def fetch_orderbook_raw(symbol: str, limit: int | None = None) -> dict:
 # ----------------------------------------------------------------------
 
 async def _demo():
-    # --- часть 1: тикеры ---
     print("[demo] fetching 24h tickers...")
     tickers = await fetch_tickers_24h_raw()
     print(f"[demo] items: {len(tickers)}")
@@ -87,7 +86,7 @@ async def _demo():
     for item in tickers[:2]:
         print(item)
 
-    # найдём первый USDT-символ для примера
+    # найдём первый USDT-символ
     symbol = None
     for t in tickers:
         s = t.get("symbol")

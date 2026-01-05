@@ -1,4 +1,7 @@
 """
+
+ПЕРЕНЕСЕНА ЛОГИКА В ПАЙПЛАЙН
+
 Stage 1 — Price snapshot + spread calculation (timing + fallback).
 
 • Берём цены напрямую из BinanceMarket / BybitMarket

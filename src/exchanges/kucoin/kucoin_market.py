@@ -2,34 +2,30 @@ import asyncio
 import httpx
 
 from src.config import (
-    BYBIT_BASE_REST_URL,
-    BYBIT_TICKERS_ENDPOINT,
-    BYBIT_ORDERBOOK_ENDPOINT,
-    ORDERBOOK_DEPTH,          # ← единая глубина стакана
+    KUCOIN_BASE_REST_URL,
+    KUCOIN_TICKERS_ENDPOINT,
+    KUCOIN_ORDERBOOK_ENDPOINT,
+    MAX_BOOK_DEPTH_LEVELS,
 )
 
 
 # ----------------------------------------------------------------------
-# 24h tickers (turnover24h / volume)
+# Tickers (best bid / best ask + 24h stats)
 # ----------------------------------------------------------------------
 
-async def fetch_tickers_raw(category: str = "spot") -> list:
+async def fetch_tickers_raw() -> list:
     """
-    Возвращает сырые Bybit tickers.
-    Важные поля: bid1Price / ask1Price / turnover24h.
+    Возвращает сырые KuCoin tickers.
+    Источник best bid/ask + 24h статистики.
     """
-    url = f"{BYBIT_BASE_REST_URL}{BYBIT_TICKERS_ENDPOINT}"
-
-    params = {
-        "category": category,
-    }
+    url = f"{KUCOIN_BASE_REST_URL}{KUCOIN_TICKERS_ENDPOINT}"
 
     async with httpx.AsyncClient() as client:
-        resp = await client.get(url, params=params)
+        resp = await client.get(url)
         resp.raise_for_status()
         payload = resp.json()
 
-    data = payload.get("result", {}).get("list", [])
+    data = payload.get("data", {}).get("ticker", [])
     return data if isinstance(data, list) else []
 
 
@@ -39,18 +35,17 @@ async def fetch_tickers_raw(category: str = "spot") -> list:
 
 async def fetch_orderbook_raw(symbol: str, limit: int | None = None) -> dict:
     """
-    Возвращает стакан Bybit (bids / asks) для символа.
-    limit — глубина, по умолчанию берём из общего конфига.
+    Возвращает стакан KuCoin (bids / asks) для символа.
+    symbol — формат вида 'BTC-USDT'
+    limit — глубина стакана, по умолчанию из конфига.
     """
     if limit is None:
-        limit = ORDERBOOK_DEPTH
+        limit = MAX_BOOK_DEPTH_LEVELS
 
-    url = f"{BYBIT_BASE_REST_URL}{BYBIT_ORDERBOOK_ENDPOINT}"
+    url = f"{KUCOIN_BASE_REST_URL}{KUCOIN_ORDERBOOK_ENDPOINT}"
 
     params = {
-            "category": "spot",
-            "symbol": symbol,
-            "limit": limit,
+        "symbol": symbol,
     }
 
     async with httpx.AsyncClient() as client:
@@ -58,8 +53,8 @@ async def fetch_orderbook_raw(symbol: str, limit: int | None = None) -> dict:
         resp.raise_for_status()
         payload = resp.json()
 
-    data = payload.get("result", {})
-    return data or {}
+    data = payload.get("data", {})
+    return data
 
 
 # ----------------------------------------------------------------------
@@ -67,14 +62,14 @@ async def fetch_orderbook_raw(symbol: str, limit: int | None = None) -> dict:
 # ----------------------------------------------------------------------
 
 async def _demo():
-    print("[demo] fetching Bybit tickers...")
+    print("[demo] fetching KuCoin tickers...")
     tickers = await fetch_tickers_raw()
     print(f"[demo] items: {len(tickers)}")
 
     for item in tickers[:2]:
         print(item)
 
-    # найдём первый USDT-символ
+    # найдём первую USDT-пару
     symbol = None
     for t in tickers:
         s = t.get("symbol")
@@ -89,17 +84,17 @@ async def _demo():
     print(f"\n[demo] fetching orderbook for {symbol} ...")
     ob = await fetch_orderbook_raw(symbol)
 
-    bids = ob.get("b", []) or ob.get("bids", [])
-    asks = ob.get("a", []) or ob.get("asks", [])
+    bids = ob.get("bids", [])
+    asks = ob.get("asks", [])
 
     print(f"[demo] depth = {len(bids)} bids / {len(asks)} asks")
 
     print("\n[demo] top 3 bids:")
-    for p, q in bids[:3]:
+    for p, q, *_ in bids[:3]:
         print(f"  {p}  x {q}")
 
     print("\n[demo] top 3 asks:")
-    for p, q in asks[:3]:
+    for p, q, *_ in asks[:3]:
         print(f"  {p}  x {q}")
 
 
