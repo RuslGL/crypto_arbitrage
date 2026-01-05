@@ -17,6 +17,22 @@ BINANCE_BOOK_TICKER_ENDPOINT = "/api/v3/ticker/bookTicker"
 # 24h tickers (объёмы + цены, используется на этапе нормализации пар)
 BINANCE_TICKERS_ENDPOINT = "/api/v3/ticker/24hr"
 
+# Orderbook (используется на Stage-2 depth-check)
+BINANCE_ORDERBOOK_ENDPOINT = "/api/v3/depth"
+
+# Глубина стакана по умолчанию при запросе к API
+BINANCE_ORDERBOOK_DEPTH = 10
+
+
+# --- Binance — fees / networks / withdrawals ------------------------------
+
+# Торговые комиссии по рынкам
+BINANCE_FEES_ENDPOINT = "/sapi/v1/asset/tradeFee"
+
+# Информация по монетам:
+# сети, минималки, депозиты / выводы, комиссии вывода
+BINANCE_COIN_INFO_ENDPOINT = "/sapi/v1/capital/config/getall"
+
 
 # --- Bybit -----------------------------------------------------------------
 
@@ -25,6 +41,22 @@ BYBIT_BASE_WS_URL   = "wss://stream.bybit.com/v5/public/spot"
 
 # 24h tickers (turnover24h / volume)
 BYBIT_TICKERS_ENDPOINT = "/v5/market/tickers"
+
+# Orderbook (используется на Stage-2 depth-check)
+BYBIT_ORDERBOOK_ENDPOINT = "/v5/market/orderbook"
+
+# Глубина стакана по умолчанию при запросе к API
+BYBIT_ORDERBOOK_DEPTH = 10
+
+
+# --- Bybit — fees / networks / withdrawals --------------------------------
+
+# Торговые комиссии по рынкам / символам
+BYBIT_FEES_ENDPOINT = "/v5/account/fee-rate"
+
+# Информация по монетам и сетям:
+# депозиты, выводы, минималки, комиссии, поддерживаемые сети
+BYBIT_COIN_INFO_ENDPOINT = "/v5/asset/coin/query-info"
 
 
 # --- Liquidity pre-filter (нормализация пар) ------------------------------
@@ -53,7 +85,7 @@ MIN_EXECUTION_NOTIONAL_USDT = 500.0
 MAX_BOOK_DEPTH_LEVELS = 10
 
 # Допустимое ухудшение средней цены при частичном исполнении (%).
-# Используется как ограничение на проскальзывание относительно цены входа.
+# Ограничение на проскальзывание относительно цены входа.
 MAX_SLIPPAGE_PCT = 0.20
 
 
